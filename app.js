@@ -1,13 +1,13 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const Blog = require("./models/blog");
+require('dotenv/config')
 const app = express();
-const dbUri =
-  "mongodb+srv://keem:12345@node-tut.k0bi4.mongodb.net/node-tut?retryWrites=true&w=majority";
+const dbUri = process.env.DB_CONNECTION;
 mongoose.connect(dbUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-});
+} );
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error: "));
@@ -15,37 +15,36 @@ db.once("open", () =>
   app.listen(5000, () => console.log("Connected successfully"))
 );
 
-app.get("/app-blog", (req, res) => {
+app.get("/app-blog", async (req, res) => {
   const blog = new Blog({
     title: "new blog 2",
     snippet: "about the blog",
     body: "more on the blog",
   });
-  blog
-    .save()
-    .then((result) => {
-      res.send(result);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  try{
+    const savedBlog = await blog.save()
+    res.send(savedBlog);
+  } catch(err){
+    res.send(err)
+  }
+  
+    
 });
 
-app.get('/all-blogs', (req, res)=>{
-  Blog.find()
-  .then((result)=>{
-    res.send(result)
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+app.get('/all-blogs', async (req, res)=>{
+  try{
+  const findBlog = await Blog.find()
+  res.send(findBlog)
+  } catch(err){
+    res.send(err)
+  }
 })
-app.get('/single-blog', (req, res)=>{
-  Blog.findById('62549fdd675cf610040669b6')
-  .then((result)=>{
-    res.send(result)
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+app.get('/single-blog', async(req, res)=>{
+  try{
+  const findBlogByID = await Blog.findById('62549fdd675cf610040669b6')
+  res.send(findBlogByID)
+  } catch (err){
+    res.send(err)
+  }
 })
+
